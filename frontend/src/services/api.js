@@ -62,7 +62,6 @@ export const logoutUser = async () => {
         }
       }
     );
-    localStorage.removeItem("token"); // optional cleanup
   } catch (err) {
     console.error("Logout failed:", err.response?.data || err);
   }

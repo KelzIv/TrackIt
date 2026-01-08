@@ -73,7 +73,7 @@ export default function MediaTracker({ token }) {
     await logoutUser();
   } finally {
     localStorage.removeItem("token");
-    window.location.href = "/login";
+    window.location.href = "/Login";
   }
 };
 
