@@ -53,7 +53,7 @@ export const deleteMedia = async (id, token) => {
 };
 export const logoutUser = async () => {
   await axios.post(
-    `${API_URL}/media`,
+    `${API_URL}/logout`,
     {},
     {
       headers: {
