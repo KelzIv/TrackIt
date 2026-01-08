@@ -73,8 +73,9 @@ app.post('/register', async (req, res) => {
 });
 
 app.get('/login', (req, res) => {
-  res.status(200).send("Login endpoint is working");
+  res.sendFile(path.join(__dirname, 'build', 'index.html'));
 });
+
 app.post('/login', async (req, res) => {
   const { username, password } = req.body;
 
