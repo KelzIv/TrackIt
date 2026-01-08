@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken');
 const express = require('express');
 const { Pool } = require('pg');
 const dotenv = require('dotenv');
+const path  = require('path');
 
 dotenv.config();
 
