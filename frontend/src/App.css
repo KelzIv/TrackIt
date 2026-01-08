@@ -1,0 +1,135 @@
+/* =========================
+   RESET & BASE
+========================= */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background: #000;
+  color: #e6f0ff;
+}
+
+/* =========================
+   ROOT APP LAYOUT
+========================= */
+#root {
+  min-height: 100vh;
+}
+
+
+
+/* =========================
+   HEADERS
+========================= */
+h1,
+h2,
+h3 {
+  color: #66b2ff;
+  margin-bottom: 16px;
+}
+
+
+/* =========================
+   FORMS
+========================= */
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+input,
+select {
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px solid #1e3a5f;
+  background: #000;
+  color: #e6f0ff;
+  font-size: 14px;
+}
+
+input:focus,
+select:focus {
+  outline: none;
+  border-color: #66b2ff;
+}
+
+/* =========================
+   BUTTONS
+========================= */
+button {
+  padding: 10px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  background: linear-gradient(135deg, #1e90ff, #0066cc);
+  color: #fff;
+  font-weight: 600;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 15px rgba(30, 144, 255, 0.4);
+}
+
+button:active {
+  transform: translateY(0);
+}
+
+/* =========================
+   MEDIA LIST
+========================= */
+.media-list {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.media-item {
+  background: rgba(0, 0, 0, 0.6);
+  border-left: 4px solid #1e90ff;
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+/* =========================
+   TEXT & FEEDBACK
+========================= */
+p {
+  margin-top: 10px;
+  font-size: 14px;
+}
+
+.success {
+  color: #5cff8d;
+}
+
+.error {
+  color: #ff6b6b;
+}
+
+/* =========================
+   LOGOUT BUTTON
+========================= */
+.logout-btn {
+  align-self: flex-end;
+  background: #1e90ff; /* normal blue */
+  color: #fff;
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.logout-btn:hover {
+  background: linear-gradient(135deg, #ff4d4d, #b30000);
+  box-shadow: 0 6px 15px rgba(255, 77, 77, 0.5);
+}
+
