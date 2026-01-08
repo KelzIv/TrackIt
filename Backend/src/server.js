@@ -233,7 +233,6 @@ app.listen(port, () => {
   console.log(`Server listening on port ${port}`);
 });
 
-const path = require('path');
 app.use(express.static(path.join(__dirname, 'build')));
 
 // Serve React app for all unknown routes
