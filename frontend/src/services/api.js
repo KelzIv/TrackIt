@@ -52,15 +52,19 @@ export const deleteMedia = async (id, token) => {
   return res.data;
 };
 export const logoutUser = async () => {
-  await axios.post(
-    `${API_URL}/logout`,
-    {},
-    {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`
+  try {
+    await axios.post(
+      `${API_URL}/logout`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`
+        }
       }
-    }
-  );
+    );
+    localStorage.removeItem("token"); // optional cleanup
+  } catch (err) {
+    console.error("Logout failed:", err.response?.data || err);
+  }
 };
-
 
