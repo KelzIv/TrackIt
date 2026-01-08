@@ -1,5 +1,7 @@
 # TrackIt - Media Tracking App
 
+**LIVE DEMO**: https://trackit-orbo.onrender.com
+
 A full-stack media tracking application built with **React**, **Node.js/Express**, **PostgreSQL**, and **JWT authentication**. Track movies, TV shows, ratings, and notes with a clean, responsive interface.
 
 [
