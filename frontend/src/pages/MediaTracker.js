@@ -19,18 +19,37 @@ export default function MediaTracker({ token, setToken }) {
   });
   const [editingId, setEditingId] = useState(null);
   const [message, setMessage] = useState("");
+  const [messageTimeout, setMessageTimeout] = useState(null);
 
+  // Fetch media when token changes
   useEffect(() => {
     const fetchMedia = async () => {
+      if (!token) return;
       try {
         const data = await getMedia(token);
         setMediaList(data);
       } catch (err) {
-        console.error(err);
+        console.error("Failed to fetch media:", err);
+        if (err.response?.status === 401) {
+          // Token invalid, auto-logout
+          handleLogout();
+        }
       }
     };
     fetchMedia();
   }, [token]);
+
+  // Clear messages automatically
+  useEffect(() => {
+    if (message && messageTimeout) {
+      clearTimeout(messageTimeout);
+    }
+    if (message) {
+      const timeout = setTimeout(() => setMessage(""), 3000);
+      setMessageTimeout(timeout);
+    }
+    return () => clearTimeout(messageTimeout);
+  }, [message, messageTimeout]);
 
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -45,13 +64,14 @@ export default function MediaTracker({ token, setToken }) {
             item.id === editingId ? updated : item
           )
         );
-        setMessage("Media updated!");
+        setMessage("Media updated successfully!");
         setEditingId(null);
       } else {
         const newItem = await addMedia(form, token);
         setMediaList([...mediaList, newItem]);
-        setMessage("Media added!");
+        setMessage("Media added successfully!");
       }
+      // Reset form
       setForm({
         title: "",
         media_type: "Movie",
@@ -60,7 +80,8 @@ export default function MediaTracker({ token, setToken }) {
         notes: "",
       });
     } catch (err) {
-      setMessage("Operation failed.");
+      console.error("Media operation failed:", err);
+      setMessage(err.response?.data?.error || "Operation failed.");
     }
   };
 
@@ -70,8 +91,8 @@ export default function MediaTracker({ token, setToken }) {
       title: item.title,
       media_type: item.media_type,
       status: item.status,
-      rating: item.rating,
-      notes: item.notes,
+      rating: item.rating || 0,
+      notes: item.notes || "",
     });
   };
 
@@ -79,22 +100,28 @@ export default function MediaTracker({ token, setToken }) {
     try {
       await deleteMedia(id, token);
       setMediaList(mediaList.filter((item) => item.id !== id));
-      setMessage("Media deleted!");
+      setMessage("Media deleted successfully!");
     } catch (err) {
+      console.error("Delete failed:", err);
       setMessage("Delete failed.");
     }
   };
 
   const handleLogout = async () => {
     try {
-      await logoutUser(); // optional backend cleanup
+      await logoutUser(); // Optional backend call
     } catch (err) {
-      console.error("Backend logout failed", err);
+      console.error("Logout API failed (normal for JWT):", err);
     } finally {
+      // Critical: Clear token from both localStorage and parent state
       localStorage.removeItem("token");
-      setToken("");
+      setToken(""); // This tells App.js to show Auth component
     }
   };
+
+  if (!token) {
+    return <div>Loading...</div>; // Prevent flash during logout
+  }
 
   return (
     <div className="app-container">
@@ -107,7 +134,7 @@ export default function MediaTracker({ token, setToken }) {
 
       <div className="content">
         <div className="card">
-          <h2>{editingId ? "Edit Media" : "Add Media"}</h2>
+          <h2>{editingId ? "Edit Media" : "Add New Media"}</h2>
 
           <form onSubmit={handleAddOrEdit} className="media-form">
             <input
@@ -123,8 +150,8 @@ export default function MediaTracker({ token, setToken }) {
               value={form.media_type}
               onChange={handleChange}
             >
-              <option>Movie</option>
-              <option>TV Show</option>
+              <option value="Movie">Movie</option>
+              <option value="TV Show">TV Show</option>
             </select>
 
             <select
@@ -132,9 +159,9 @@ export default function MediaTracker({ token, setToken }) {
               value={form.status}
               onChange={handleChange}
             >
-              <option>To Watch</option>
-              <option>Watching</option>
-              <option>Watched</option>
+              <option value="To Watch">To Watch</option>
+              <option value="Watching">Watching</option>
+              <option value="Watched">Watched</option>
             </select>
 
             <input
@@ -142,49 +169,86 @@ export default function MediaTracker({ token, setToken }) {
               type="number"
               min="0"
               max="5"
+              step="0.5"
               value={form.rating}
               onChange={handleChange}
-              placeholder="Rating (0–5)"
+              placeholder="Rating (0-5)"
             />
 
-            <input
+            <textarea
               name="notes"
               placeholder="Notes"
               value={form.notes}
               onChange={handleChange}
+              rows="3"
             />
 
             <button type="submit" className="primary-btn">
               {editingId ? "Update Media" : "Add Media"}
             </button>
+
+            {editingId && (
+              <button
+                type="button"
+                className="cancel-btn"
+                onClick={() => {
+                  setEditingId(null);
+                  setForm({
+                    title: "",
+                    media_type: "Movie",
+                    status: "To Watch",
+                    rating: 0,
+                    notes: "",
+                  });
+                }}
+              >
+                Cancel
+              </button>
+            )}
           </form>
 
-          {message && <p className="message">{message}</p>}
+          {message && (
+            <p className={`message ${message.includes("success") ? "success" : "error"}`}>
+              {message}
+            </p>
+          )}
         </div>
 
         <div className="media-list">
-          {mediaList.map((item) => (
-            <div className="media-card" key={item.id}>
-              <h3>{item.title}</h3>
-              <p>
-                {item.media_type} • {item.status}
-              </p>
-              <p>Rating: {item.rating}</p>
-              <p className="notes">{item.notes}</p>
+          {mediaList.length === 0 ? (
+            <p className="empty-state">No media tracked yet. Add some above!</p>
+          ) : (
+            mediaList.map((item) => (
+              <div className="media-card" key={item.id}>
+                <h3>{item.title}</h3>
+                <p className="media-meta">
+                  <span className="media-type">{item.media_type}</span> • 
+                  <span className={`status ${item.status.toLowerCase().replace(' ', '-')}`}>
+                    {item.status}
+                  </span>
+                </p>
+                {item.rating > 0 && (
+                  <p className="rating">⭐ {item.rating}/5</p>
+                )}
+                {item.notes && <p className="notes">{item.notes}</p>}
 
-              <div className="actions">
-                <button onClick={() => handleEditClick(item)}>
-                  Edit
-                </button>
-                <button
-                  className="danger"
-                  onClick={() => handleDeleteClick(item.id)}
-                >
-                  Delete
-                </button>
+                <div className="actions">
+                  <button 
+                    className="edit-btn"
+                    onClick={() => handleEditClick(item)}
+                  >
+                    Edit
+                  </button>
+                  <button
+                    className="delete-btn"
+                    onClick={() => handleDeleteClick(item.id)}
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
     </div>
