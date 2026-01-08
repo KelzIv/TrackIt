@@ -2,45 +2,20 @@
 const cors = require('cors');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-
 const express = require('express');
 const { Pool } = require('pg');
-
-// Use environment variable from Render or local .env
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false // required for Supabase
-  }
-});
-
-// Test connection on startup
-pool.connect()
-  .then(client => {
-    console.log('DB connected at', new Date());
-    client.release();
-  })
-  .catch(err => {
-    console.error('DB connection error:', err.stack);
-  });
-
-module.exports = pool;
-
 const dotenv = require('dotenv');
 
 dotenv.config();
 
 const app = express();
-app.use(cors({
-  origin: "http://localhost:3000",
-  credentials: true
-}));// adjust origin if needed
-app.use(express.json()); // to parse JSON request bodies
 
-const port = process.env.PORT || 5000;
-
-
-
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false
+  }
+});
 
 pool.connect()
   .then(client => {
@@ -48,6 +23,15 @@ pool.connect()
     client.release();
   })
   .catch(err => console.error('DB connection error:', err.stack));
+
+app.use(cors({
+  origin: "http://localhost:3000",
+  credentials: true
+}));
+
+app.use(express.json());
+
+const port = process.env.PORT || 5000;
 
 
 app.get('/health', async (req, res) => {
@@ -246,4 +230,12 @@ app.use((req, res) => {
 
 app.listen(port, () => {
   console.log(`Server listening on port ${port}`);
+});
+
+const path = require('path');
+app.use(express.static(path.join(__dirname, 'build')));
+
+// Serve React app for all unknown routes
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'build', 'index.html'));
 });
