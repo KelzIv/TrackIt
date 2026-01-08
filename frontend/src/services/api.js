@@ -53,7 +53,7 @@ export const deleteMedia = async (id, token) => {
 };
 export const logoutUser = async () => {
   await axios.post(
-    "http://localhost:5000/logout",
+    `${API_URL}/media`,
     {},
     {
       headers: {
