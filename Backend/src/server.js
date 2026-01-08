@@ -5,6 +5,27 @@ const jwt = require('jsonwebtoken');
 
 const express = require('express');
 const { Pool } = require('pg');
+
+// Use environment variable from Render or local .env
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false // required for Supabase
+  }
+});
+
+// Test connection on startup
+pool.connect()
+  .then(client => {
+    console.log('DB connected at', new Date());
+    client.release();
+  })
+  .catch(err => {
+    console.error('DB connection error:', err.stack);
+  });
+
+module.exports = pool;
+
 const dotenv = require('dotenv');
 
 dotenv.config();
@@ -18,9 +39,7 @@ app.use(express.json()); // to parse JSON request bodies
 
 const port = process.env.PORT || 5000;
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL
-});
+
 
 
 pool.connect()
