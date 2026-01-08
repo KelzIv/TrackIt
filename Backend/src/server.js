@@ -221,21 +221,20 @@ app.post('/logout', (req, res) => {
 });
 
 
+app.use(express.static(path.join(__dirname, 'build')));
+
+
 app.get('/', (req, res) => {
-  res.send('TrackIt backend is running!');
+  res.sendFile(path.join(__dirname, 'build', 'index.html'));
 });
+
 
 app.use((req, res) => {
   res.status(404).send('Route not found');
 });
 
+
 app.listen(port, () => {
   console.log(`Server listening on port ${port}`);
 });
 
-app.use(express.static(path.join(__dirname, 'build')));
-
-// Serve React app for all unknown routes
-app.get('/*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'build', 'index.html'));
-});
